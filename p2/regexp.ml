@@ -33,7 +33,7 @@ let empty_string = Epsilon;;
 let single c = Single c;;
 
 (*val except       : symbol -> regexp*)
-let Except c = Except c;;
+let except c = Except c;;
 
 (*val any          : regexp*)
 let any = Any;;

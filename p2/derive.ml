@@ -55,4 +55,4 @@ let matches_regexp str r =
 (*val matches          : string -> string -> bool*)
 (*donde matches str1 str2 calcula si str1 encaja con la expresióón
 regular en formato Posix de str2*)
-let matches str1 str2 = false;;
+let matches str1 str2 = matches_regexp str1 (regexp_of_string str2);;

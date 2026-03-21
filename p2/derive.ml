@@ -38,7 +38,16 @@ match r with
 
 (*val matches_regexp   : string -> Regexp.regexp -> bool*)
 (*calcula si un string encaja con una expresión regular*)
-let matches_regexp str r = false;;
+(*Una cadena formada por los caracteres c1c2...cn encaja con una expresi´on regular r si la
+derivada de r para toda la cadena acepta ε, esto es, si se cumple que:
+ν(∂cn(...∂c2(∂c1(r)))) = ε*)
+let matches_regexp str r = 
+    match str with
+    | "" -> nullable r = Epsilon (*si la cadena es vacía, verificamos si la expresión regular acepta ε*)
+    | _ -> let primero = str.[0] in
+           let resto = String.sub str 1 (String.length str - 1) in
+           matches_regexp resto (derive primero r) (*vamos derivando en cadena desde el primer caracter*)
+;;
 
 (*val matches          : string -> string -> bool*)
 (*donde matches str1 str2 calcula si str1 encaja con la expresióón

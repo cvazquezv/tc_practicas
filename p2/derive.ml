@@ -23,17 +23,17 @@ match r with
 (*para un carácter c y una expresión regular r devuelva  ∂c(r)*)
 let derive c r = 
 match r with
-| Empty -> Empty (*∂a(∅) = ∅*)
-| Epsilon -> Empty (*∂a(ε) = ∅*)
-| Single a when a = c -> Epsilon (*∂a(a) = ε si a = c, ∅ en otro caso*)
-| Single _ -> Empty (*∂a(a) = ∅ si a ≠ c*)
-| Except a when a = c -> Epsilon (*∂a([^a]) = ε si a = c, ∅ en otro caso*)
-| Except _ -> Empty (*∂a(^a) = ∅ si a ≠ c*)
-| Concat (r1, r2) -> if nullable r1 = Epsilon then Alt (Concat (derive c r1, r2), derive c r2) else Concat (derive c r1, r2) (*∂a(r·s) = ∂a(r)·s + ν(r)·∂a(s)*)
-| Any -> Epsilon (*∂a(.) = ε*)
-| Alt (r1, r2) -> Alt (derive c r1, derive c r2) (*∂a(r + s) = ∂a(r) + ∂a(s)*)
-| All (r1, r2) -> All (derive c r1, derive c r2) (*∂a(r & s) = ∂a(r) & ∂a(s)*)
-| Repeat _ -> Concat (derive c r, Repeat _) (*∂a(r* ) = ∂a(r)·r* *)
+| Empty -> Empty (*∂c(∅) = ∅*)
+| Epsilon -> Empty (*∂c(ε) = ∅*)
+| Single a when a = c -> Epsilon (*∂c(a) = ε si a = c, ∅ en otro caso*)
+| Single _ -> Empty (*∂c(a) = ∅ si a ≠ c*)
+| Except a when a = c -> Empty (*∂c(^a) = ∅ si a = c, ε en otro caso*)
+| Except _ -> Epsilon (*∂c(^a) = ε si a ≠ c*)
+| Any -> Epsilon (*∂c(.) = ε*)
+| Concat (r1, r2) -> Alt (Concat (derive c r1, r2), Concat (nullable r1, derive c r2)) (*∂c(r·s) = ∂c(r)·s + ν(r)·∂c(s)*)
+| Repeat r -> Concat (derive c r, Repeat r) (*∂c(r* ) = ∂c(r)·r* *)
+| Alt (r1, r2) -> Alt (derive c r1, derive c r2) (*∂c(r + s) = ∂c(r) + ∂c(s)*)
+| All (r1, r2) -> All (derive c r1, derive c r2) (*∂c(r & s) = ∂c(r) & ∂c(s)*)
 ;;
 
 (*val matches_regexp   : string -> Regexp.regexp -> bool*)

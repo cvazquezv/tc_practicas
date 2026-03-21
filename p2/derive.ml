@@ -15,8 +15,7 @@ match r with
 | Single _ | Any | Except _ -> Empty (*ν(a) = ν(.) = ν(^a) = ∅*)
 | Concat (r1, r2) -> if nullable r1 = Epsilon && nullable r2 = Epsilon then Epsilon else Empty (*ν(r·s) = ν(r)·ν(s)*)
 | Repeat _ -> Epsilon (*ν(r* ) = ε*)
-| Alt (r1, r2) -> if nullable r1 = Epsilon || nullable r2 = Epsilon then Epsilon else Empty (*ν(r + s) = ν(r) + ν(s)*)
-| All (r1, r2) -> if nullable r1 = Epsilon && nullable r2 = Epsilon then Epsilon else Empty (*ν(r & s) = ν(r) & ν(s)*)
+| Alt (r1, r2) -> if nullable r1 = Epsilon || nullable r2 = Epsilon then Epsilon else Empty (*ν(r + s) = ε si ν(r) = ε ó ν(s) = ε | ∅ en otro caso*)
 ;;
 
 (*val derive           : char -> Regexp.regexp -> Regexp.regexp*)

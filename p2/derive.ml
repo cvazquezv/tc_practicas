@@ -8,7 +8,7 @@ let regexp_of_string s = Regexp_parser.main Regexp_lexer.token (Lexing.from_stri
 
 (*val nullable         : Regexp.regexp -> Regexp.regexp*)
 (*para una expresión regular r devuelva v(r)*)
-let nullable r = 
+let rec nullable r = 
 match r with
 | Empty -> Empty (*ν(∅) = ∅*)
 | Epsilon -> Epsilon (*ν(ε) = ε*)
@@ -46,8 +46,6 @@ let matches_regexp str r =
             nullable r = Epsilon (*si hemos procesado toda la cadena, verificamos si la expresión regular acepta ε*)
         else
             let c = str.[i] in
-            aux (i + 1) (derive c r) (*vamos derivando en cadena desde el primer caracter*)
-    in aux 0 r
             aux (i + 1) (derive c r) (*vamos derivando en cadena desde el primer caracter*)
     in aux 0 r
 ;;

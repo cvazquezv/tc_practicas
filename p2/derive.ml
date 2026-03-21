@@ -8,7 +8,7 @@ let regexp_of_string s = Regexp_parser.main Regexp_lexer.token (Lexing.from_stri
 
 (*val nullable         : Regexp.regexp -> Regexp.regexp*)
 (*para una expresión regular r devuelva v(r)*)
-let nullable r = 
+let rec nullable r = 
 match r with
 | Empty -> Empty (*ν(∅) = ∅*)
 | Epsilon -> Epsilon (*ν(ε) = ε*)

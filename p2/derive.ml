@@ -13,7 +13,7 @@ match r with
 | Empty -> Empty (*ν(∅) = ∅*)
 | Epsilon -> Epsilon (*ν(ε) = ε*)
 | Single _ | Any | Except _ -> Empty (*ν(a) = ν(.) = ν(^a) = ∅*)
-| Concat (r1, r2) -> if nullable r1 = Epsilon && nullable r2 = Epsilon then Epsilon else Empty (*ν(r·s) = ν(r)·ν(s)*)
+| Concat (r1, r2) | All (r1, r2) -> if nullable r1 = Epsilon && nullable r2 = Epsilon then Epsilon else Empty (*ν(r·s) = ε si ν(r) = ε y ν(s) = ε | ∅ en otro caso*)(*ν(r&s) = ε si ν(r) = ε y ν(s) = ε | ∅ en otro caso*)
 | Repeat _ -> Epsilon (*ν(r* ) = ε*)
 | Alt (r1, r2) -> if nullable r1 = Epsilon || nullable r2 = Epsilon then Epsilon else Empty (*ν(r + s) = ε si ν(r) = ε ó ν(s) = ε | ∅ en otro caso*)
 ;;

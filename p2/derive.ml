@@ -41,11 +41,13 @@ match r with
 derivada de r para toda la cadena acepta ε, esto es, si se cumple que:
 ν(∂cn(...∂c2(∂c1(r)))) = ε*)
 let matches_regexp str r = 
-    match str with
-    | "" -> nullable r = Epsilon (*si la cadena es vacía, verificamos si la expresión regular acepta ε*)
-    | _ -> let primero = str.[0] in
-           let resto = String.sub str 1 (String.length str - 1) in
-           matches_regexp resto (derive primero r) (*vamos derivando en cadena desde el primer caracter*)
+    let rec aux i resto =
+        if i >= String.length str then
+            nullable r = Epsilon (*si hemos procesado toda la cadena, verificamos si la expresión regular acepta ε*)
+        else
+            let c = str.[i] in
+            aux (i + 1) (derive c r) (*vamos derivando en cadena desde el primer caracter*)
+    in aux 0 r
 ;;
 
 (*val matches          : string -> string -> bool*)

@@ -90,6 +90,3 @@ let matches_regexp str r =
 (*donde matches str1 str2 calcula si str1 encaja con la expresióón
 regular en formato Posix de str2*)
 let matches str1 str2 = matches_regexp str1 (regexp_of_string str2);;
-
-        | _ -> All (primero, segundo) (*en otro caso, mantenemos el AND*)
-    | _ -> r (*para los demás casos, queda igual*)

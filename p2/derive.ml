@@ -54,3 +54,35 @@ let matches_regexp str r =
 (*donde matches str1 str2 calcula si str1 encaja con la expresióón
 regular en formato Posix de str2*)
 let matches str1 str2 = matches_regexp str1 (regexp_of_string str2);;
+
+(*APARTADO OPCIONAL SIMPLIFY*)
+(*val simplify : Regexp.regexp-> Regexp.regexp*)
+let rec simplify r =
+    match r with
+    | Concat (s1, s2) -> 
+        let primero = simplify s1 in
+        let segundo = simplify s2 in
+        match (primero, segundo) with
+        | (Empty, _) | (_, Empty) -> Empty (*∅·r =∅, r·∅ =∅*)
+        | (Epsilon, x) | (x, Epsilon) -> x (*r·ϵ =r, ϵ·r =r*)
+        | _ -> Concat (primero, segundo) (*en otro caso, mantenemos la concatenación*)
+    | Repeat s -> 
+        let simp = simplify s in
+        match simp with
+        | Epsilon -> Epsilon (*ϵ* = ϵ*)
+        | Empty -> Empty (*∅* = ∅*)
+        | _ -> Repeat simp (*en otro caso, mantenemos la repetición*)
+    | Alt (s1, s2) ->
+        let primero = simplify s1 in
+        let segundo = simplify s2 in
+        match (primero, segundo) with
+        | (Empty, x) | (x, Empty) -> x (*∅ + r =r, r + ∅ =r*)
+        | (x, x) -> x (*r + r = r*)
+        | _ -> Alt (primero, segundo) (*en otro caso, mantenemos el OR*)
+    | All (s1, s2) ->
+        let primero = simplify s1 in
+        let segundo = simplify s2 in
+        match (primero, segundo) with
+        | (Empty, _) | (_, Empty) -> Empty (*∅ & r =∅, r & ∅ =∅*)
+        | _ -> All (primero, segundo) (*en otro caso, mantenemos el AND*)
+    | _ -> r (*para los demás casos, queda igual*)

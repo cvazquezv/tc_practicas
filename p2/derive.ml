@@ -35,6 +35,42 @@ match r with
 | All (r1, r2) -> All (derive c r1, derive c r2) (*∂c(r & s) = ∂c(r) & ∂c(s)*)
 ;;
 
+(*------------------------------------------------------------*)
+(*APARTADO OPCIONAL SIMPLIFY*)
+(*val simplify : Regexp.regexp-> Regexp.regexp*)
+let rec simplify r =
+    match r with
+    | Concat (s1, s2) -> 
+        let primero = simplify s1 in
+        let segundo = simplify s2 in
+        (match (primero, segundo) with
+        | (Empty, _) | (_, Empty) -> Empty (*∅·r =∅, r·∅ =∅*)
+        | (Epsilon, x) | (x, Epsilon) -> x (*r·ϵ =r, ϵ·r =r*)
+        | _ -> Concat (primero, segundo)) (*en otro caso, mantenemos la concatenación*)
+    | Repeat s -> 
+        let simp = simplify s in
+        (match simp with
+        | Epsilon -> Epsilon (*ϵ* = ϵ*)
+        | Empty -> Empty (*∅* = ∅*)
+        | _ -> Repeat simp) (*en otro caso, mantenemos la repetición*)
+    | Alt (s1, s2) ->
+        let primero = simplify s1 in
+        let segundo = simplify s2 in
+        (match (primero, segundo) with
+        | (Empty, x) | (x, Empty) -> x (*∅ + r =r, r + ∅ =r*)
+        | (x, y) when x == y -> x (*r + r = r*)
+        | _ -> Alt (primero, segundo)) (*en otro caso, mantenemos el OR*)
+    | All (s1, s2) ->
+        let primero = simplify s1 in
+        let segundo = simplify s2 in
+        (match (primero, segundo) with
+        | (Empty, _) | (_, Empty) -> Empty (*∅ & r =∅, r & ∅ =∅*)
+        | _ -> All (primero, segundo)) (*en otro caso, mantenemos el AND*)
+    | _ -> r (*para los demás casos, queda igual*)
+    ;;
+    (*------------------------------------------------------------*)
+
+
 (*val matches_regexp   : string -> Regexp.regexp -> bool*)
 (*calcula si un string encaja con una expresión regular*)
 (*Una cadena formada por los caracteres c1c2...cn encaja con una expresi´on regular r si la

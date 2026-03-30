@@ -1,0 +1,32 @@
+
+# OCaml compiled files
+*.cmi
+*.cmo
+*.cmx
+*.cmxa
+*.cmxs
+*.o
+*.a
+
+# OCaml build directories
+_build/
+_obuild/
+
+# Executables (without extension on Unix/Linux)
+mg
+miu
+q
+q2
+
+# Output and test files
+*.txt
+
+# Makefile dependencies
+.depend
+*.depend
+
+# Editor and OS files
+.DS_Store
+.vscode/
+*.swp
+*~

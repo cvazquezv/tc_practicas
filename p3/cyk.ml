@@ -1,5 +1,5 @@
 (*==================Ejercicio 1=====================*)
-
+type tree = Node of string * tree list
 
 
 (*==================Ejercicio 2=====================*)

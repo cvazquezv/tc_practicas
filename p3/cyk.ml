@@ -25,3 +25,20 @@ type grammar = {
 
 
 (*==================Ejercicio 4=====================*)
+
+let () = 
+	if Array.length Sys.argv = 3 then
+		let param = Sys.argv.(1) in
+        let file = Sys.argv.(2) in
+		match param with
+        | "-g" ->
+                let read_file file in
+                if is_cnf g then
+                    Printf.printf "yes\n"
+                else
+                    Printf.printf "no\n"
+        | "-p" -> (*implementacion de ej 2*)
+        | _ -> Printf.printf "Usage: cyk -g <file> | -p <file> \n";
+	else
+		Printf.printf "Usage: cyk -g <file> | -p <file> \n";;
+

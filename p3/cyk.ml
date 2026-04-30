@@ -17,6 +17,11 @@ type grammar = {
 
 (*==================Ejercicio 1=====================*)
 
+let char_to_symbol c =
+    if c>='a' && c<='z' then T c (*si el char es minúscula entonces es TERMINAL*)
+    else if c>='A' && c<='Z' then NT c (*si el char es mayúscula entonces es NO TERMINAL*)
+    else failwith "Formato de gramática incorrecto";;
+
 let read_file file =
     try
         let channel = open_in file in (*open_in abre el fichero para leer y devuelve input channel*)

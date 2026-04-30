@@ -22,6 +22,19 @@ let char_to_symbol c =
     else if c>='A' && c<='Z' then NT c (*si el char es mayúscula entonces es NO TERMINAL*)
     else failwith "Formato de gramática incorrecto";;
 
+let parse_rule line = (*supuestamente las reglas están en formato SAB y la regla sería S->AB*)
+    if String.length line < 2 then failwith "Formato de regla incorrecto" (*si la línea es menor a 2 caracteres ya no vale*)
+    else
+        let left = char_to_symbol line.[0] in (*el primer char es el símbolo izquierdo de la regla*)
+        match left with
+        | T _ -> failwith "El símbolo izquierdo no puede ser terminal" (*si el símbolo izquierdo es terminal ya no vale*)
+         
+        | NT _ ->
+                let right = List.init (String.length line - 1) (fun i -> char_to_symbol line.[i + 1]) in (*los chars a partir del segundo char ya son la parte derecha de la regla*)
+                (*List.init n f crea una lista de tamaño n, aplicando la función f a cada elemento*)
+
+                {left; right};; (*devuelvo un record con el símbolo izquierdo y la lista de símbolos derechos*)
+                (*con SAB la S ya quedaría en left y right quedaría como [A; B]*)
 let read_file file =
     try
         let channel = open_in file in (*open_in abre el fichero para leer y devuelve input channel*)

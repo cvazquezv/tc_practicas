@@ -84,7 +84,19 @@ let cykg file =
         Printf.printf "no\n"
 
 (*==================Ejercicio 2=====================*)
+let parse_string s = 
+    if String.length s = 0 || not (String.for_all (fun c -> c>='a' && c<='z' ) s) then failwith "Cadena no válida" (*si la cadena es vacía ya no vale*)
+    else List.init (String.length s) (fun i -> char_to_symbol s.[i]);; (*convierto cada char de la cadena a símbolo y lo guardo en una lista*)
 
+let cykp file = 
+    let lines = read_file file in (*leo el archivo*)
+    match lines with
+    | [] -> failwith "Archivo vacío" (*si el archivo no tiene líneas ya no vale*)
+    | _ -> 
+        let g = parser lines in (*parseo las líneas para crear la gramática*)
+        if not (is_cnf g) then failwith "La gramática no está en FNC" (*si la gramática no está en FNC ya no vale*)
+        else
+            loop g;;
 
 (*==================Ejercicio 3=====================*)
 

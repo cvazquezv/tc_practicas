@@ -35,6 +35,16 @@ let parse_rule line = (*supuestamente las reglas están en formato SAB y la regl
 
                 {left; right};; (*devuelvo un record con el símbolo izquierdo y la lista de símbolos derechos*)
                 (*con SAB la S ya quedaría en left y right quedaría como [A; B]*)
+
+let parser lines =
+    match lines with
+    | [] -> failwith "Archivo vacío" (*si el archivo no tiene líneas ya no vale*)
+    | first_line :: rule_lines ->
+            let axioma = char_to_symbol first_line.[0] in (*el primer símbolo de la primera línea del archivo es el símbolo inicial de la gramática*)
+            let rules = List.map parse_rule rule_lines in (*el resto de las líneas son las reglas de la gramática*)
+            (*List.map f l crea una lista aplicando la función f a cada elemento de l*)
+            {axioma; rules};; (*devuelvo un record con el símbolo inicial y la lista de reglas*)
+
 let read_file file =
     try
         let channel = open_in file in (*open_in abre el fichero para leer y devuelve input channel*)

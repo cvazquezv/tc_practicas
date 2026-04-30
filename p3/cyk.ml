@@ -11,7 +11,7 @@ type rule = { (*ejemplo del pdf: S->AB*)
 }
 
 type grammar = {
-    start: symbol; (*símbolo inicial de la gramática*)
+    axioma: symbol; (*símbolo inicial de la gramática*)
     rules: rule list (*lista de reglas de la gramática*)
 }
 
@@ -92,13 +92,13 @@ let cykg file =
 (*==================Ejercicio 4=====================*)
 
 let () = 
-	if Array.length Sys.argv = 3 then
+	if Array.length Sys.argv = 3 then (
 		let param = Sys.argv.(1) in
         let file = Sys.argv.(2) in
 		match param with
         | "-g" -> cykg file
         | "-p" -> Printf.printf "aun no implementado \n";
-        | _ -> Printf.printf "Usage: cyk -g <file> | -p <file> \n";;
-	else
-		Printf.printf "Usage: cyk -g <file> | -p <file> \n";;
+        | _ -> Printf.printf "Usage: cyk -g <file> | -p <file> \n"
+    )
+    else Printf.printf "Usage: cyk -g <file> | -p <file> \n";;
 

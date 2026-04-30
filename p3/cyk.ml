@@ -61,6 +61,19 @@ let read_file file =
         Printf.printf "Error al abrir el archivo: %s\n" err;
         exit 1;;
 
+let is_cnf g = (*la FNC es de la siguiente forma según la teoría:*)
+    (*si las reglas A -> son de la siguiente forma:
+    . si w es un solo caracter, tiene que ser sí o sí TERMINAL
+    . si |w| > 1, entonces w debe ser una secuencia de DOS NO TERMINALES X1X2
+        * si X1 o X2 son terminales, entonces X1 -> T ó X2 -> T 
+        * si es NT se va binarizando*)
+    let is_valid_rule rule =
+        match rule.right with
+        | [T _] -> true (*si la parte derecha es un solo terminal, es válida*)
+        | [NT _; NT _] -> true (*si la parte derecha son dos no terminales, es válida*)
+        | _ -> false (*cualquier otra forma no es válida*)
+    in
+    List.for_all is_valid_rule g.rules;; (*List.for_all f l devuelve true si f devuelve true para todos los elementos de l*)
 
 let cykg file = 
     let lines = read_file file in (*leo el archivo*)

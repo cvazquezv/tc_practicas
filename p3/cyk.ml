@@ -17,7 +17,21 @@ type grammar = {
 
 (*==================Ejercicio 1=====================*)
 
-let read_file
+let read_file file =
+    try
+        let channel = open_in file in (*open_in abre el fichero para leer y devuelve input channel*)
+        let rec aux acc = (*en el acc guardo la lista de líneas*)
+            try
+            let line = input_line channel in (*input_line lee una línea del fichero hasta \n y devuelve string*)
+            aux (line :: acc) 
+            with End_of_file -> (*si termino de leer el file*)
+            close_in channel; (*close_in cierra el fichero y libera el recurso*)
+            List.rev acc (*invierto la lista para que salga en orden*)
+        in
+        aux []
+    with Sys_error err ->
+        Printf.printf "Error al abrir el archivo: %s\n" err;
+        exit 1;;
 
 (*==================Ejercicio 2=====================*)
 

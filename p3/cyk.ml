@@ -75,7 +75,8 @@ let () =
         let file = Sys.argv.(2) in
 		match param with
         | "-g" ->
-                let g = read_file file in
+            let lines = read_file file in
+                let g = parser lines in
                 if is_cnf g then
                     Printf.printf "yes\n"
                 else

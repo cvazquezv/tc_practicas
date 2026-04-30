@@ -17,6 +17,7 @@ type grammar = {
 
 (*==================Ejercicio 1=====================*)
 
+let read_file
 
 (*==================Ejercicio 2=====================*)
 
@@ -32,13 +33,13 @@ let () =
         let file = Sys.argv.(2) in
 		match param with
         | "-g" ->
-                let read_file file in
+                let g = read_file file in
                 if is_cnf g then
                     Printf.printf "yes\n"
                 else
                     Printf.printf "no\n"
-        | "-p" -> (*implementacion de ej 2*)
-        | _ -> Printf.printf "Usage: cyk -g <file> | -p <file> \n";
+        | "-p" -> Printf.printf "aun no implementado \n";
+        | _ -> Printf.printf "Usage: cyk -g <file> | -p <file> \n";;
 	else
 		Printf.printf "Usage: cyk -g <file> | -p <file> \n";;
 

@@ -61,6 +61,15 @@ let read_file file =
         Printf.printf "Error al abrir el archivo: %s\n" err;
         exit 1;;
 
+
+let cykg file = 
+    let lines = read_file file in (*leo el archivo*)
+    let g = parser lines in (*parseo las líneas para crear la gramática*)
+    if is_cnf g then
+        Printf.printf "yes\n"
+    else
+        Printf.printf "no\n"
+
 (*==================Ejercicio 2=====================*)
 
 
@@ -74,13 +83,7 @@ let () =
 		let param = Sys.argv.(1) in
         let file = Sys.argv.(2) in
 		match param with
-        | "-g" ->
-            let lines = read_file file in
-                let g = parser lines in
-                if is_cnf g then
-                    Printf.printf "yes\n"
-                else
-                    Printf.printf "no\n"
+        | "-g" -> cykg file
         | "-p" -> Printf.printf "aun no implementado \n";
         | _ -> Printf.printf "Usage: cyk -g <file> | -p <file> \n";;
 	else

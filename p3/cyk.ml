@@ -88,6 +88,23 @@ let parse_string s =
     if String.length s = 0 || not (String.for_all (fun c -> c>='a' && c<='z' ) s) then failwith "Cadena no válida" (*si la cadena es vacía ya no vale*)
     else List.init (String.length s) (fun i -> char_to_symbol s.[i]);; (*convierto cada char de la cadena a símbolo y lo guardo en una lista*)
 
+
+let loop g = (*se leen las cadenas del stdin*)
+    try
+        while true do
+            let line = input_line stdin in  (*leemos una línea del input*)
+            (try
+                let cadena = parse_string line in     (*convertimos el string en lista de símbolos*)
+                if cyk_algorithm g cadena then        (*aplicamos CYK*)
+                    Printf.printf "yes\n"
+                else
+                    Printf.printf "no\n"
+            with Failure err ->
+                Printf.printf "Error: %s\n" err)      (*si hay error en la cadena, lo mostramos*)
+        done
+    with End_of_file -> ()  (*cuando no hay más líneas, terminamos silenciosamente*)
+
+
 let cykp file = 
     let lines = read_file file in (*leo el archivo*)
     match lines with

@@ -106,7 +106,7 @@ let nt_nt g nt1 nt2 = (*devuelve la lista de no terminales que generan la secuen
         | [] -> acc (*si ya no quedan más reglas*)
         | rule :: rest ->
             match rule.right with
-            | [NT n1; NT n2] when n1 = nt1 && n2 = nt2 -> aux rest (rule.left :: acc) (*si la parte derecha de la regla es la secuencia de no terminales que buscamos, agregamos el símbolo izquierdo a la lista de no terminales*)
+            | [n1; n2] when n1 = nt1 && n2 = nt2 -> aux rest (rule.left :: acc) (*si la parte derecha de la regla es la secuencia de no terminales que buscamos, agregamos el símbolo izquierdo a la lista de no terminales*)
             | _ -> aux rest acc (*si no, seguimos buscando*)
     in
     aux g.rules [];; (*iniciamos la búsqueda con la lista de reglas y una lista vacía para acumular los no terminales encontrados*)
@@ -127,14 +127,42 @@ let combine_cells g cell1 cell2 = (*combina las celdas para obtener los no termi
             aux2 cell2 acc (*iniciamos la búsqueda con la segunda celda*)
     in
     aux1 cell1 [];; (*iniciamos la búsqueda con la primera celda*)
+
+let cyk g cadena =
+    let string = Array.of_list cadena in (*convertimos la lista de símbolos a un array para facilitar el acceso por índices*)
+    let n = Array.length string in (*obtenemos la longitud de la cadena*)
+    let table = Array.make_matrix n n [] in (*creamos una tabla de tamaño n x n para almacenar los no terminales que generan cada subcadena*)
+    (*table.(i).(j) contiene la lista de no terminales que generan la subcadena desde i hasta j*)
     
+    (*llenamos la primera fila de la tabla con los no terminales que generan cada símbolo terminal de la cadena*)
+    for i = 0 to n-1 do
+        match string.(i) with
+        | T t -> table.(i).(0) <- nt_t g t (*si el símbolo es terminal, obtenemos los no terminales que lo generan y los guardamos en la primera fila de la tabla*)
+        | NT _ -> failwith "La cadena no puede contener símbolos no terminales" (*si la cadena contiene símbolos no terminales ya no vale*)
+    done;
+
+    (*llenamos el resto de la tabla combinando las celdas anteriores*)
+    for j = 1 to n-1 do 
+        for i = 0 to n-j-1 do
+            for k = 0 to j-1 do
+                let left_cell = table.(i).(k) in 
+                let right_cell = table.(i+k+1).(j-k-1) in
+                let combined = combine_cells g left_cell right_cell in (*combinamos las celdas para obtener los no terminales que generan la subcadena desde i hasta i+j*)
+                table.(i).(j) <- combined @ table.(i).(j) (*agregamos los no terminales encontrados a la celda actual*)
+            done
+        done
+    done;
+
+    List.mem g.axioma table.(0).(n-1) (*verificamos si el símbolo inicial de la gramática está en la celda que genera toda la cadena, es decir, en table.(0).(n-1)*)
+
+    (*al final, verificamos si el símbolo inicial de la gramática está en la celda que genera toda la cadena*)
 let loop g = (*se leen las cadenas del stdin*)
     try
         while true do
             let line = input_line stdin in  (*leemos una línea del input*)
             (try
                 let cadena = parse_string line in     (*convertimos el string en lista de símbolos*)
-                if cyk_algorithm g cadena then        (*aplicamos CYK*)
+                if cyk g cadena then        (*aplicamos CYK*)
                     Printf.printf "yes\n"
                 else
                     Printf.printf "no\n"

@@ -89,6 +89,17 @@ let parse_string s =
     else List.init (String.length s) (fun i -> char_to_symbol s.[i]);; (*convierto cada char de la cadena a símbolo y lo guardo en una lista*)
 
 
+let nt_t g terminal = (*devuelve la lista de no terminales que generan el terminal dado*) (*para la primera fila de la torre*)
+    let rec aux rules acc =
+        match rules with
+        | [] -> acc (*si ya no quedan más reglas*)
+        | rule :: rest ->
+            match rule.right with
+            | [T t] when t = terminal -> aux rest (rule.left :: acc) (*si la parte derecha de la regla es el terminal que buscamos, agregamos el símbolo izquierdo a la lista de no terminales*)
+            | _ -> aux rest acc (*si no, seguimos buscando*)
+    in
+    aux g.rules [];; (*iniciamos la búsqueda con la lista de reglas y una lista vacía para acumular los no terminales encontrados*)
+
 let loop g = (*se leen las cadenas del stdin*)
     try
         while true do

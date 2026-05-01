@@ -111,6 +111,23 @@ let nt_nt g nt1 nt2 = (*devuelve la lista de no terminales que generan la secuen
     in
     aux g.rules [];; (*iniciamos la búsqueda con la lista de reglas y una lista vacía para acumular los no terminales encontrados*)
 
+let combine_cells g cell1 cell2 = (*combina las celdas para obtener los no terminales que generan la secuencia de símbolos*)
+    let rec aux1 l1 acc = (*recorre los NT de la primera celda*)
+        match l1 with
+        | [] -> acc (*si ya no quedan más no terminales en la primera celda*)
+        | nt1 :: rest1 ->
+            let rec aux2 l2 acc2 = (*combina nt1 con todos los NT de la segunda celda*)
+                match l2 with
+                | [] -> aux1 rest1 acc2 
+                (*cuando se termina la segunda celda, seguimos con el siguiente símbolo de la primera*)
+                | nt2 :: rest2 ->
+                    let nts = nt_nt g nt1 nt2 in (*obtenemos los no terminales que generan la secuencia de nt1 y nt2*)
+                    aux2 rest2 (nts @ acc2) (*agregamos los no terminales encontrados a la lista acumulada*)
+            in
+            aux2 cell2 acc (*iniciamos la búsqueda con la segunda celda*)
+    in
+    aux1 cell1 [];; (*iniciamos la búsqueda con la primera celda*)
+    
 let loop g = (*se leen las cadenas del stdin*)
     try
         while true do

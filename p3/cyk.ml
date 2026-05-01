@@ -100,6 +100,17 @@ let nt_t g terminal = (*devuelve la lista de no terminales que generan el termin
     in
     aux g.rules [];; (*iniciamos la búsqueda con la lista de reglas y una lista vacía para acumular los no terminales encontrados*)
 
+let nt_nt g nt1 nt2 = (*devuelve la lista de no terminales que generan la secuencia de dos no terminales dada*) (*para las filas siguientes de la torre*)
+    let rec aux rules acc =
+        match rules with
+        | [] -> acc (*si ya no quedan más reglas*)
+        | rule :: rest ->
+            match rule.right with
+            | [NT n1; NT n2] when n1 = nt1 && n2 = nt2 -> aux rest (rule.left :: acc) (*si la parte derecha de la regla es la secuencia de no terminales que buscamos, agregamos el símbolo izquierdo a la lista de no terminales*)
+            | _ -> aux rest acc (*si no, seguimos buscando*)
+    in
+    aux g.rules [];; (*iniciamos la búsqueda con la lista de reglas y una lista vacía para acumular los no terminales encontrados*)
+
 let loop g = (*se leen las cadenas del stdin*)
     try
         while true do

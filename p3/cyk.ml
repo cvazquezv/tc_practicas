@@ -193,7 +193,7 @@ let () =
         let file = Sys.argv.(2) in
 		match param with
         | "-g" -> cykg file
-        | "-p" -> Printf.printf "aun no implementado \n";
+        | "-p" -> cykp file;
         | _ -> Printf.printf "Usage: cyk -g <file> | -p <file> \n"
     )
     else Printf.printf "Usage: cyk -g <file> | -p <file> \n";;

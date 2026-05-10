@@ -17,12 +17,19 @@ type grammar = {
 
 (*==================Ejercicio 1=====================*)
 
-let char_to_symbol c =
-    if c>='a' && c<='z' then T c (*si el char es minúscula entonces es TERMINAL*)
-    else if c>='A' && c<='Z' then NT c (*si el char es mayúscula entonces es NO TERMINAL*)
-    else failwith "Formato de gramática incorrecto";;
+let is_terminal c =
+    c >= 'a' && c <= 'z';; (*si el char es minúscula, es terminal*)
 
-let parse_rule line = (*supuestamente las reglas están en formato SAB y la regla sería S->AB*)
+let is_non_terminal c =
+    c >= 'A' && c <= 'Z';; (*si el char es mayúscula, es no terminal*)
+
+let char_to_symbol c =
+    if is_terminal c then T c (*si el char es minúscula entonces es TERMINAL*)
+    else if is_non_terminal c then NT c (*si el char es mayúscula entonces es NO TERMINAL*)
+    else failwith "Caracter inválido";;
+
+let parse_rule line = (*supuestamente las reglas están en formato SAB y la regla sería S->AB*) (*left: S; right: [A; B]*)
+    try
     if String.length line < 2 then failwith "Formato de regla incorrecto" (*si la línea es menor a 2 caracteres ya no vale*)
     else
         let left = char_to_symbol line.[0] in (*el primer char es el símbolo izquierdo de la regla*)
@@ -33,15 +40,16 @@ let parse_rule line = (*supuestamente las reglas están en formato SAB y la regl
                 let right = List.init (String.length line - 1) (fun i -> char_to_symbol line.[i + 1]) in (*los chars a partir del segundo char ya son la parte derecha de la regla*)
                 (*List.init n f crea una lista de tamaño n, aplicando la función f a cada elemento*)
 
-                {left; right};; (*devuelvo un record con el símbolo izquierdo y la lista de símbolos derechos*)
+                {left; right} (*devuelvo un record con el símbolo izquierdo y la lista de símbolos derechos*)
                 (*con SAB la S ya quedaría en left y right quedaría como [A; B]*)
+    with Failure _ -> failwith "Formato de gramática incorrecto";; (*si char_to_symbol lanza una excepción*)
 
 let parser lines =
     match lines with
     | [] -> failwith "Archivo vacío" (*si el archivo no tiene líneas ya no vale*)
-    | first_line :: rule_lines ->
+    | first_line :: _ ->
             let axioma = char_to_symbol first_line.[0] in (*el primer símbolo de la primera línea del archivo es el símbolo inicial de la gramática*)
-            let rules = List.map parse_rule rule_lines in (*el resto de las líneas son las reglas de la gramática*)
+            let rules = List.map parse_rule lines in (*el resto de las líneas son las reglas de la gramática*)
             (*List.map f l crea una lista aplicando la función f a cada elemento de l*)
             {axioma; rules};; (*devuelvo un record con el símbolo inicial y la lista de reglas*)
 
@@ -85,8 +93,8 @@ let cykg file =
 
 (*==================Ejercicio 2=====================*)
 let parse_string s = 
-    if String.length s = 0 || not (String.for_all (fun c -> c>='a' && c<='z' ) s) then failwith "Cadena no válida" (*si la cadena es vacía ya no vale*)
-    else List.init (String.length s) (fun i -> char_to_symbol s.[i]);; (*convierto cada char de la cadena a símbolo y lo guardo en una lista*)
+    if String.length s = 0 || not (String.for_all (fun c -> is_terminal c ) s) then failwith "Cadena no válida" (*si la cadena es vacía ya no vale*) (*si tiene algún símbolo que no es terminal tampoco vale*)
+    else try List.init (String.length s) (fun i -> char_to_symbol s.[i]) with Failure _ -> failwith "Formato de cadena incorrecto";; (*convierto cada char de la cadena a símbolo y lo guardo en una lista*)
 
 
 let nt_t g terminal = (*devuelve la lista de no terminales que generan el terminal dado*) (*para la primera fila de la torre*)
@@ -156,21 +164,22 @@ let cyk g cadena =
     List.mem g.axioma table.(0).(n-1) (*verificamos si el símbolo inicial de la gramática está en la celda que genera toda la cadena, es decir, en table.(0).(n-1)*)
 
     (*al final, verificamos si el símbolo inicial de la gramática está en la celda que genera toda la cadena*)
-let loop g = (*se leen las cadenas del stdin*)
+let rec loop g = (*se leen las cadenas del stdin*)
     try
-        while true do
-            let line = input_line stdin in  (*leemos una línea del input*)
-            (try
-                let cadena = parse_string line in     (*convertimos el string en lista de símbolos*)
-                if cyk g cadena then        (*aplicamos CYK*)
-                    Printf.printf "yes\n"
-                else
-                    Printf.printf "no\n"
-            with Failure err ->
-                Printf.printf "Error: %s\n" err)      (*si hay error en la cadena, lo mostramos*)
-        done
-    with End_of_file -> ()  (*cuando no hay más líneas, terminamos silenciosamente*)
+        let line = input_line stdin in  (*leemos una línea del input*)
+        let cadena = parse_string line in     (*convertimos el string en lista de símbolos*)
+        if cyk g cadena then        (*aplicamos CYK*)
+            print_endline "yes"
+        else
+            print_endline "no";
 
+        loop g (*seguimos leyendo más líneas*)
+    
+    with 
+    | Failure err ->
+        print_endline ("Error: " ^ err); (*si hay error en el input, lo mostramos*)
+        loop g (*seguimos leyendo más líneas*)
+    | End_of_file -> ()  (*cuando no hay más líneas, terminamos silenciosamente*)
 
 let cykp file = 
     let lines = read_file file in (*leo el archivo*)
@@ -182,10 +191,8 @@ let cykp file =
         else
             loop g;;
 
-(*==================Ejercicio 3=====================*)
 
-
-(*==================Ejercicio 4=====================*)
+(*==================MAIN=====================*)
 
 let () = 
 	if Array.length Sys.argv = 3 then (
@@ -193,7 +200,7 @@ let () =
         let file = Sys.argv.(2) in
 		match param with
         | "-g" -> cykg file
-        | "-p" -> cykp file;
+        | "-p" -> cykp file
         | _ -> Printf.printf "Usage: cyk -g <file> | -p <file> \n"
     )
     else Printf.printf "Usage: cyk -g <file> | -p <file> \n";;

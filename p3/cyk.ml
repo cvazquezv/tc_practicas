@@ -153,31 +153,54 @@ let combine_cells g cell1 cell2 =
 
 (*aplica el algoritmo CYK a una gramática y una cadena*)
 let cyk g cadena =
-    let string = Array.of_list cadena in (*convertimos la lista de símbolos a un array para facilitar el acceso por índices*)
-    let n = Array.length string in (*obtenemos la longitud de la cadena*)
-    let table = Array.make_matrix n n [] in (*creamos una tabla de tamaño n x n para almacenar los no terminales que generan cada subcadena*)
-    (*table.(i).(j) contiene la lista de no terminales que generan la subcadena desde i hasta j*)
+    let palabra = Array.of_list cadena in (*convertimos la lista de símbolos a un array para facilitar el acceso por índices*)
+    let n = Array.length palabra in (*obtenemos la longitud de la cadena*)
+    let table = Array.make_matrix (n+1) (n+1) [] in (*creamos una tabla de tamaño (n+1) x (n+1) para almacenar las listas de no terminales que generan cada subcadena*) 
+    (*se crea con dimensiones (n+1) para simplificar el acceso a los índices: así uso directamente j como longitud de la subcadena (la fila 0 no la uso)*)
+    (*Array.make_matrix dimx dimy e devuelve una tabla o matriz de dimx filas x dimy columnas con los elementos inicializados a e*)
+    (*table.(j).(i) representa la celda Nij del pdf donde j es la longitud de la subcadena e i la posición inicial de la subcadena*)
+    (*para cada subcadena de longitud j que empieza en i, pruebo todas las formas de dividirla en dos partes:
+    izquierda: longitud k, empieza en i
+    derecha: longitud j-k, empieza en i+k*)
     
     (*llenamos la primera fila de la tabla con los no terminales que generan cada símbolo terminal de la cadena*)
     for i = 0 to n-1 do
-        match string.(i) with
-        | T t -> table.(i).(0) <- nt_t g t (*para cada terminal de la cadena, obtenemos los no terminales que lo generan y los guardamos en la primera fila de la tabla*)
+        match palabra.(i) with
+        | T t -> table.(1).(i) <- nt_t g t (*para cada terminal de la cadena, obtenemos los no terminales que lo generan y los guardamos en la primera fila de la tabla*)
         | NT _ -> failwith "La cadena no puede contener símbolos no terminales" (*si la cadena contiene símbolos no terminales ya no vale*)
     done;
 
     (*llenamos el resto de la tabla combinando las celdas anteriores*)
-    for j = 1 to n-1 do (*rellena el resto de filas*)
-        for i = 0 to n-j-1 do 
-            for k = 0 to j-1 do 
-                let left_cell = table.(i).(k) in 
-                let right_cell = table.(i+k+1).(j-k-1) in
+    for j = 2 to n do
+    (* j = longitud de la subcadena que estamos analizando (2, 3, ..., n)     
+     equivale a subir un nivel en la tabla: j=2 es la fila 2, j=n es la    
+     fila superior. Cada nivel analiza subcadenas un símbolo más largas*)
+
+        for i = 0 to n-j do 
+        (* i = posición de inicio de la subcadena dentro de la palabra 
+         va de 0 hasta n-j porque por ejemplo una cadena de longitud 4
+         solo tiene 3 posiciones en las que puede empezar (0, 1, 2), es
+         decir: longitud de palabra - longitud de subcadena
+         Ej: palabra "bbab" (n=4), j=2 -> i va de 0 a 2: "bb","ba","ab"*)
+
+            for k = 1 to j-1 do
+            (* k = longitud de la parte izquierda al dividir la subcadena   
+            Dividimos la subcadena en dos trozos:              
+            izquierda: empieza en i, longitud k   -> tabla.(k).(i)    
+            derecha: empieza en i+k, longitud j-k -> tabla.(j-k).(i+k)
+            Ej: subcadena "bba" (i=0, j=3):                               
+            k=1: "b"|"ba"  -> tabla.(1).(0) x tabla.(2).(1)            
+            k=2: "bb"|"a"  -> tabla.(2).(0) x tabla.(1).(2)*)
+
+                let left_cell = table.(k).(i) in 
+                let right_cell = table.(j-k).(i+k) in
                 let combined = combine_cells g left_cell right_cell in (*combinamos las celdas para obtener los no terminales que generan esas combinaciones*)
-                table.(i).(j) <- combined @ table.(i).(j) (*agregamos los no terminales encontrados a la celda actual*)
+                table.(j).(i) <- combined @ table.(j).(i) (*agregamos los no terminales encontrados a la celda actual*)
             done
         done
     done;
 
-    List.mem g.axioma table.(0).(n-1) (*verificamos si el símbolo inicial de la gramática está en la celda superior. Si aparece, la cadena pertenece al lenguaje*)
+    List.mem g.axioma table.(n).(0) (*verificamos si el símbolo inicial de la gramática está en la celda superior. Si aparece, la cadena pertenece al lenguaje*)
 
 (*lee las cadenas por teclado o por stdin en bucle*)
 let rec loop g = 

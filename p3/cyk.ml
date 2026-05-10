@@ -156,21 +156,27 @@ let cyk g cadena =
     let palabra = Array.of_list cadena in (*convertimos la lista de símbolos a un array para facilitar el acceso por índices*)
     let n = Array.length palabra in (*obtenemos la longitud de la cadena*)
     let table = Array.make_matrix (n+1) (n+1) [] in (*creamos una tabla de tamaño (n+1) x (n+1) para almacenar las listas de no terminales que generan cada subcadena*) 
-    (*se crea con dimensiones (n+1) para simplificar el acceso a los índices: así uso directamente j como longitud de la subcadena (la fila 0 no la uso)*)
+    (*se crea con dimensiones (n+1) para simplificar el acceso a los índices: así uso directamente j como longitud de la subcadena (la fila 0 no la uso porque no trabajo con subcadenas de longitud 0)*)
     (*Array.make_matrix dimx dimy e devuelve una tabla o matriz de dimx filas x dimy columnas con los elementos inicializados a e*)
-    (*table.(j).(i) representa la celda Nij del pdf donde j es la longitud de la subcadena e i la posición inicial de la subcadena*)
+    (*table.(i).(j) representa la celda Nij del pdf donde j es la longitud de la subcadena e i la posición inicial de la subcadena*)
     (*para cada subcadena de longitud j que empieza en i, pruebo todas las formas de dividirla en dos partes:
     izquierda: longitud k, empieza en i
     derecha: longitud j-k, empieza en i+k*)
     
     (*llenamos la primera fila de la tabla con los no terminales que generan cada símbolo terminal de la cadena*)
+    (*Paso 1 del pdf: Ni1 = {A|A →wi1 ∈P}*)
     for i = 0 to n-1 do
         match palabra.(i) with
-        | T t -> table.(1).(i) <- nt_t g t (*para cada terminal de la cadena, obtenemos los no terminales que lo generan y los guardamos en la primera fila de la tabla*)
+        | T t -> table.(i).(1) <- nt_t g t (*para cada terminal de la cadena, obtenemos los no terminales que lo generan y los guardamos en la primera fila de la tabla*)
         | NT _ -> failwith "La cadena no puede contener símbolos no terminales" (*si la cadena contiene símbolos no terminales ya no vale*)
     done;
 
     (*llenamos el resto de la tabla combinando las celdas anteriores*)
+    (*paso 2 del pdf: 
+    Para j =2,3,...,n
+    − Para i =1,2,...,n−j+1
+    − Para k =1,2,...,j−1, 
+    En mi caso i va de 0 a j-1*)
     for j = 2 to n do
     (* j = longitud de la subcadena que estamos analizando (2, 3, ..., n)     
      equivale a subir un nivel en la tabla: j=2 es la fila 2, j=n es la    
@@ -191,16 +197,17 @@ let cyk g cadena =
             Ej: subcadena "bba" (i=0, j=3):                               
             k=1: "b"|"ba"  -> tabla.(1).(0) x tabla.(2).(1)            
             k=2: "bb"|"a"  -> tabla.(2).(0) x tabla.(1).(2)*)
-
-                let left_cell = table.(k).(i) in 
-                let right_cell = table.(j-k).(i+k) in
+                
+                let left_cell = table.(i).(k) in (*Nik*)
+                let right_cell = table.(i+k).(j-k) in (*N(i+k)(j-k)*)
+                (* añadir a Nij todos los símbolos no terminales A para los cuales A → BC ∈ P (trnsiciones), con B ∈ Nik y C ∈ N(i+k)(j−k)*)
                 let combined = combine_cells g left_cell right_cell in (*combinamos las celdas para obtener los no terminales que generan esas combinaciones*)
-                table.(j).(i) <- combined @ table.(j).(i) (*agregamos los no terminales encontrados a la celda actual*)
+                table.(i).(j) <- combined @ table.(i).(j) (*agregamos los no terminales encontrados a la celda actual*)
             done
         done
     done;
-
-    List.mem g.axioma table.(n).(0) (*verificamos si el símbolo inicial de la gramática está en la celda superior. Si aparece, la cadena pertenece al lenguaje*)
+    (*La cadena w pertenece a L(G)si y sólo si S ∈ N1n   En el array, como empieza en 0, sería table.(0).(n)*)
+    List.mem g.axioma table.(0).(n) (*verificamos si el símbolo inicial de la gramática está en la celda superior. Si aparece, la cadena pertenece al lenguaje*)
 
 (*lee las cadenas por teclado o por stdin en bucle*)
 let rec loop g = 
